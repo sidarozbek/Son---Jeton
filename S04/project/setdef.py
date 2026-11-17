@@ -1,0 +1,69 @@
+"""Scene 04: a street at dusk, January 1980. Layout and timing in room.py.
+The road along x, cameras in the road; the far sidewalk, the grocer's front and the apartment facades at the back."""
+import math
+
+import room as R
+
+FY = R.FACADE_Y
+
+
+def build(S):
+    # Ground: the road, the kerb, the sidewalk; a strip of front sidewalk so wide shots have a near edge.
+    S.floor(S.tex_mat('cobbles.jpg'), R.X0, R.X1, -2.0, R.ROAD_Y1, tile=1.8)
+    S.floor(S.tex_mat('pavement.jpg'), R.X0, R.X1, R.ROAD_Y1, FY, tile=1.8, lift=.004)
+    S.box((150, 152, 150), (R.X0 + R.X1) / 2, R.ROAD_Y1, .03, R.X1 - R.X0, .16, .06)       # Kerb stones.
+    S.box((236, 236, 232), (R.X0 + R.X1) / 2, R.ROAD_Y1 + .14, .02, R.X1 - R.X0, .1, .03)  # Snow along the kerb.
+    # The facades: ground-floor walls either side of the grocer, the shop front, the upper floors, a cornice.
+    gw = S.tex_mat('groundwall.jpg')
+    S.wall(gw, (R.X0, FY), (R.SHOP_X0, FY), 0, R.GROUND_H, repeat=4.0)
+    S.wall(gw, (R.SHOP_X1, FY), (R.X1, FY), 0, R.GROUND_H, repeat=4.0)
+    S.wall(S.tex_mat('shopfront.jpg', emit=.9), (R.SHOP_X0, FY), (R.SHOP_X1, FY), 0, R.GROUND_H)
+    S.wall(S.tex_mat('facade.jpg'), (R.X0, FY), (R.X1, FY), R.GROUND_H, R.UPPER_H, repeat=4.0)
+    S.box((170, 176, 172), (R.X0 + R.X1) / 2, FY - .08, R.GROUND_H, R.X1 - R.X0, .18, .14)
+    # The calendar, hanging inside the shop window (a quad just in front of the painted glass).
+    x0, x1, z0, z1 = R.CAL
+    S.wall(S.tex_mat('calendar.jpg', emit=.95), (x0, R.CAL_Y), (x1, R.CAL_Y), z0, z1 - z0)
+    S.box((60, 60, 60), (x0 + x1) / 2, R.CAL_Y + .005, z1 + .06, .01, .005, .12)            # Its string.
+    # A striped awning over the shop, rolled half out.
+    for i in range(8):
+        col = (196, 64, 52) if i % 2 == 0 else (236, 228, 210)
+        x = R.SHOP_X0 + .1 + (i + .5) * (R.SHOP_X1 - R.SHOP_X0 - .2) / 8
+        S.box(col, x, FY - .32, 2.98, (R.SHOP_X1 - R.SHOP_X0 - .2) / 8, .62, .04)
+    S.box((240, 240, 236), (R.SHOP_X0 + R.SHOP_X1) / 2, FY - .32, 3.02, R.SHOP_X1 - R.SHOP_X0 - .2, .62, .02)  # Snow on it.
+    # Crates of oranges and a sack outside the door.
+    for cx in (7.05, 7.4):
+        S.box((120, 84, 50), cx, FY - .3, .18, .32, .42, .36)
+        for k in range(6):
+            S.lump((236, 140, 40), cx - .09 + (k % 3) * .09, FY - .42 + (k // 3) * .2, .4, .05, .05, .05)
+    S.lump((206, 190, 150), 4.6, FY - .25, .25, .2, .17, .27)
+    # The street lamp: a pole at the kerb, an arm over the road, a lamp head.
+    lx, ly = R.LAMP_POST
+    S.box((48, 54, 58), lx, ly, 2.1, .1, .1, 4.2)
+    S.box((48, 54, 58), lx, (ly + R.LAMP_HEAD[1]) / 2, 4.15, .06, ly - R.LAMP_HEAD[1] + .1, .06)
+    hx, hy, hz = R.LAMP_HEAD
+    S.box((40, 44, 48), hx, hy, hz + .06, .34, .22, .08)
+    S.lump((255, 226, 160), hx, hy, hz - .02, .13, .08, .05)
+    # Further down the street: a second lamp, a parked van shape (an original boxy silhouette, no make), a bare tree.
+    S.box((48, 54, 58), 13.5, ly, 2.1, .1, .1, 4.2)
+    S.lump((255, 226, 160), 13.5, 4.05, 4.03, .13, .08, .05)
+    S.box((96, 120, 140), 11.0, 3.4, .75, 3.2, 1.6, 1.1)
+    S.box((96, 120, 140), 10.0, 3.4, 1.55, 1.2, 1.5, .55)
+    S.box((150, 186, 204), 9.95, 3.4 - .76, 1.55, 1.0, .02, .4)
+    S.box((240, 240, 236), 11.0, 3.4, 1.32, 3.1, 1.5, .03)
+    for wx in (9.9, 12.1):
+        for wy in (2.62, 4.18):
+            S.box((24, 24, 26), wx, wy, .3, .6, .14, .6)
+    S.box((70, 56, 46), -1.2, 5.3, 1.6, .16, .16, 3.2)
+    for k in range(6):
+        a = k * 1.05
+        S.box((70, 56, 46), -1.2 + .45 * math.cos(a), 5.3 + .25 * math.sin(a), 3.25 + .25 * (k % 2), .06, .06, .9)
+    # Snow heaped along the foot of the facades.
+    for x in range(int(R.X0), int(R.X1), 2):
+        if R.SHOP_X0 - .4 < x < R.SHOP_X1 + .2:
+            continue
+        S.lump((234, 234, 230), x + .5, FY - .12, .02, .7, .18, .08)
+    S.sun(.12, tilt=35, heading=-120)
+
+
+def animate(S, t):
+    pass
